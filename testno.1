@@ -1,0 +1,58 @@
+#Thesis2019
+#Hyeyoon Jeong, Grad student in South Korea
+#government document 2017
+#Test no.1 (making wordcloud)
+
+getwd()
+setwd("C:/Users/SG/Documents/gov_pdf")
+
+
+install.packages('stringr')
+install.packages('tm')
+install.packages('textreadr')
+install.packages('reshape2')
+install.packages('wordcloud2')
+
+library(tm)
+library(stringr)
+library(textreadr)
+
+#First, install package named 'KoNLP'. I had some issues when I tried to install 'KoNLP' package because of the R version. 
+#If you have same problems like me, install manually.
+#install KoNLP package from CRAN. However, even though KoNLP package installed successfully, rJava could be another problem.
+#Then remove rJava files in KoNLP, download and put new rJava files into KoNLP directory.
+
+library(KoNLP)
+library(reshape2)
+library(wordcloud2)
+
+#load gov2017.pdf
+
+gov2017 <- readLines('gov2017.txt', encoding="UTF-8")
+gov2017 <- read_pdf('gov2017_1.pdf')
+text2017 <- gov2017$text
+
+#Removing 
+text2017 <- str_replace_all(text2017, "[[:lower:]]","") #소문자 알파벳으로 표시된 텍스트 삭제
+text2017 <- str_replace_all(text2017, "[[:upper:]]","") #대문자 알파벳 삭제
+text2017 <- str_replace_all(text2017, "[^[:alpha:][:digit:]]"," ")#특수문자제거
+text2017 <- str_replace_all(text2017, "[一-籲]","")#한자제거
+text2017 <- str_replace_all(text2017, "[[:digit:]]","") #숫자제거
+noun2017 <- extractNoun(text2017)
+
+#Now we collected all the nouns from 2017 government document!!
+noun2017
+
+library(wordcloud2)
+
+#Making wordcloud
+wordcount <- table(unlist(noun2017))
+wordcount
+re_word <- as.data.frame(wordcount, stringsAsFactors = F)
+re_word <-rename(re_word, word=Var1, freq=Freq)
+re_word <- filter(re_word, nchar(word)>=2)
+top_100 <- re_word %>%
+  arrange(desc(freq)) %>%
+  head(100)
+top_100
+wordcloud2(top_100, size = 2)
